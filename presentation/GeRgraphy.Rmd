@@ -1,0 +1,29 @@
+---
+title: "GeRgraphy"
+author: "Dave Evans and Aaron Ruesch"
+date: "16 March, 2016"
+output: html_document
+---
+### Introduction to GIS and Spatial Concepts
+
+#### Data storage
+#### Coordinate sytems
+#### Summary
+
+### Vector Data
+
+#### Intro
+#### Input/Output
+#### Structure
+#### Working with Vector Data
+
+### Raster Data
+
+#### Intro
+#### Input/Output
+#### Structure
+#### Working with Raster Data
+
+### Flyover of Coordinate Reference Systems
+
+#### A Necessary Evil
