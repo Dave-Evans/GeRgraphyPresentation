@@ -167,10 +167,19 @@ writeOGR(
     overwrite_layer=T
 )
 
+m = readOGR(
+    dsn=paste0(getwd(),"/data"),
+    layer="soilsData"
+)
 
 
 ##### Creating point data
 pts = spsample(m, 10, "random")
+
+plot(m)
+plot(pts, add=T, col='red',cex=2,pch=20)
+
+pts = SpatialPointsDataFrame(pts, data.frame(id=1:length(pts)), match.ID=FALSE)
 
 writeOGR(
     pts,
