@@ -8,7 +8,7 @@ library(SSOAP)
 library(rgdal)
 library(rgeos)
 library(reshape2)
-
+### Putting together the soils data
 vrbls = c(
     "Sand",
     "Silt",
@@ -47,7 +47,7 @@ sum.that.works = function(values, hrz.height, comppct) {
 ####
 sda_crs = CRS("+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs")
 # c(e@xmin, e@ymin, e@xmax, e@ymax)
-m = mapunit_geom_by_ll_bbox(c(-90.074433, 43.084657, -90.04693, 43.105714))
+m = mapunit_geom_by_ll_bbox(c(-90.093115, 43.079415, -90.021813, 43.115011))
 m = subset(m, select=c(mukey, muareaacres))
 
 proj4string(m) = "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"
@@ -107,11 +107,14 @@ for (mky in unique(comp_data$mukey)) {
         print("Slabber...")
         max_depths = aggregate(cbind(hzdepb_r, comppct_r) ~ cokey, mc, max, na.rm=T)
         max_depth = with(max_depths, weighted.mean(hzdepb_r, w = comppct_r))
+        for (datCol in datCols){ mc[is.na(mc[,datCol]), datCol] = 0 }
+
         depths(mc) = cokey ~ hzdept_r + hzdepb_r
         # slab to the MU level           
         slab.structure = seq(0,round(max_depth),length.out=6)
         hrz.height = floor(slab.structure[2])
         comppct = with(mc@horizons, unique(cbind(cokey, comppct_r)))[,2]
+        
         mky_data = slab(mc, fm = 
                             ~ sandtotal_r +
                             silttotal_r + 
@@ -164,5 +167,17 @@ writeOGR(
     overwrite_layer=T
 )
 
+
+
+##### Creating point data
+pts = spsample(m, 10, "random")
+
+writeOGR(
+    pts,
+    dsn=paste0(getwd(),"/data"),
+    layer="soilsData_pts",
+    driver="ESRI Shapefile",
+    overwrite_layer=T
+)
 
     
