@@ -29,10 +29,40 @@ There are many other resources for using R for spatial data analysis and rather 
 
 
 ### Vector Data
-The backbone of R's vector data utilities can be found in the packages sp, rgeos, and rgdal, with a lot of helpful tools being found in classInt, maptools, and many others. The explore R's functionality with vector data, we will examine two different datasets: a set of wards with census data and election results, and polygons of soil types. 
+The backbone of R's vector data utilities can be found in the packages 'sp', 'rgeos', and rgdal, with a lot of helpful tools being found in classInt, maptools, and many others. This presentation explore R's functionality with vector data, we will examine two different datasets: a set of wards with census data and election results, and polygons of soil types. (See the workspace directory for how these were put together.)
 
 #### Intro
+Before the R stuff, the GIS stuff. Vector data can be easily described as shapes, and as we said they fall into three main categories, points lines and polygons. Most often, data are pacakged in collections, so we may have 72 polygons for the state of Wisconsin. Each of the counties (each shape) are referred to as a *feature*; this is a general rule about spatial data, each observation in the group is known as a feature. Each feature will have other data attached to it, these are known as *attributes* (for the entire dataset this often called the *attribute table*). As an example, the attributes of a soils dataset will decribe the sand and clay percentage for each polygon or for ward data they may hold the population information. 
+
 #### Input/Output
+To read in the data we'll use the rgdal package (which is the R implentation of the GDAL suite of tools). Our data is in the form of shapefiles, but that doesn't concern us here (a shapefile is comprise of several different files, so we leave off the extensions) and we just tell 'readOGR()' where our data is and what the name of the file is. We'll also show a plot of what we're working with as well as miscellaneous functions to help us tell us what we're working with.
+```{r}
+require(rgdal)
+
+soils = readOGR(
+    dsn="../data",
+    layer="soilsData"
+)
+
+plot(soils, main="Soils from Western WI")
+
+#### Diagnostic functions
+class(soils)
+### Take a peak here at the top of our attribute table
+head(soils@data)
+#### Make sure not to call head() on the spatial object, as this spits out the 
+####    first six features and all their attributes
+# head(soils)
+#### str() not too helpful here as it spits out the guts of the spatial components
+# str(soils) 
+#### Number of features
+length(soils)
+
+#### index the first feature with a slice
+soils[1,]
+```
+You can see that as we read it in, R tells us how many features, how many soil polygons, are in the data we just read in and how many fields are in the attribute table. Shapefiles are the most common non-database format for spatial data, but later we will cover working with a table of points.
+
 #### Structure
 #### Working with Vector Data
 
@@ -46,3 +76,6 @@ The backbone of R's vector data utilities can be found in the packages sp, rgeos
 ### Flyover of Coordinate Reference Systems
 
 #### A Necessary Evil
+Here we'll discuss the situation where you will read in a table of points, that does not have any spatial reference system attached to it.
+
+

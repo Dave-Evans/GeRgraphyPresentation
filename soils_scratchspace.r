@@ -159,6 +159,8 @@ for (mky in unique(comp_data$mukey)) {
     }
     
 }
+
+#### Reproject this later Dave!!
 writeOGR(
     m,
     dsn=paste0(getwd(),"/data"),
@@ -183,7 +185,7 @@ pts = SpatialPointsDataFrame(pts, data.frame(id=1:length(pts)), match.ID=FALSE)
 
 writeOGR(
     pts,
-    dsn=paste0(getwd(),"/data"),
+    dsn=paste0("Documents/GeRgraphyPresentation","/data"),
     layer="soilsData_pts",
     driver="ESRI Shapefile",
     overwrite_layer=T
