@@ -150,6 +150,8 @@ Raster = Continuous<br><br>
 Vector = Illustrator/Inkscape<br>
 Raster = Photoshop/GIMP<br>
 
+<br><br><br><br><br><br>
+
 ![vector vs. raster graphics](img/VectorBitmapExample_small.png)
 
 <div class="notes">
@@ -174,7 +176,7 @@ The backbone of R's vector data utilities can be found in the packages 'sp', 'rg
 Before the R stuff, the GIS stuff. Vector data can be easily described as shapes, and as we said they fall into three main categories, points lines and polygons. Most often, data are pacakged in collections, so we may have 72 polygons for the state of Wisconsin. Each of the counties (each shape) are referred to as a *feature*; this is a general rule about spatial data, each observation in the group is known as a feature. Each feature will have other data attached to it, these are known as *attributes* (for the entire dataset this often called the *attribute table*). As an example, the attributes of a soils dataset will decribe the sand and clay percentage for each polygon or for ward data they may hold the population information. 
 </div>
 
-## I/O
+## Vector I/O
 
 ```{r}
 library(rgdal)
@@ -184,7 +186,7 @@ library(rgdal)
 To read in the data we'll use the rgdal package (which is the R implentation of the GDAL suite of tools). Our data is in the form of shapefiles, but that doesn't concern us here (a shapefile is comprise of several different files, so we leave off the extensions) and we just tell 'readOGR()' where our data is and what the name of the file is. We'll also show a plot of what we're working with as well as miscellaneous functions to help us tell us what we're working with.
 </div>
 
-## I/O
+## Vector I/O
 
 ```{r}
 soils = readOGR(dsn="data", layer="soilsData")
@@ -206,27 +208,29 @@ You can see that as we read it in, R tells us how many features, how many soil p
 
 ```{r}
 class(soils)
+slotNames(soils)
 ```
 
 ## Vector data structure {.smaller}
 
 Take a peak here at the top of our attribute table
+
 ```{r}
-head(soils@data[,1:5])
+str(soils@data[,1:5])
+```
+
+*Make sure not to call ```head()``` or ```str()``` on a spatial object, as this spits out the first six features and all their attributes
+
+## Vector data structure {.smaller}
+
+```{r}
+str(soils@data[,1:10])
 ```
 
 ## Vector data structure {.smaller}
 
-Make sure not to call ```head()``` on the spatial object, as this spits out the first six features and all their attributes
-
 ```{r}
-head(soils)
-```
-
-## Vector data structure {.smaller}
-```str()``` not too helpful here as it spits out the guts of the spatial components
-```{r}
-str(soils)
+str(soils@polygons[1])
 ```
 
 ## Vector data structure
@@ -243,7 +247,16 @@ poly_1 = soils[1,]
 ```
 
 ## Plotting {.columns-2}
-```{r echo=2, fig.width=4, fig.height=5}
+
+```{r eval=FALSE}
+plot(
+  soils,
+  main="Soils from Western WI",
+  col=rainbow(5)
+)
+```
+<br><br><br><br><br><br><br><br><br><br><br>
+```{r echo=F, fig.width=4, fig.height=5}
 par(bg=NA)
 plot(
   soils,
@@ -256,12 +269,185 @@ plot(
 
 # Raster Data
 
-## Intro
-## Input/Output
-## Structure
-## Working with Raster Data
+<div class="notes">
+Raster data can be easily described as a grids.
+</div>
 
-# Flyover of Coordinate Reference Systems
+## Intro
+
+A raster <font color="blue">**grid**</font> is rectangular. 
+
+<font color="blue">**Grid**</font> is another word for <font color="red">**matrix**</font>.
+
+<font color="blue">**Grid**</font> is another word for <font color="red">**image**</font>.
+
+A GIS raster <font color="blue">**grid**</font> is a <font color="red">**matrix/image**</font> with an associated location and projection.
+
+## Intro {.columns-2}
+
+At a minimum, a GIS raster grid contains:
+
+1. matrix of values
+2. projection
+3. reference point, often (x,y) of the lower-left corner
+4. cellsize
+
+<br><br><br><br><br><br><br><br>
+
+![minimal raster grid](img/minimal_raster_small.png)
+
+## Raster I/O
+
+The rgdal ```rgdal``` packages is primarily for I/O and projecting GIS data
+
+```{r message=FALSE, warning=FALSE}
+library(rgdal)
+```
+
+The ```raster``` package does everything ```rgdal``` does, but it includes lots of additional functionality.
+
+```{r message=FALSE, warning=FALSE}
+library(raster)
+```
+
+## Raster I/O
+
+```{r eval=FALSE}
+elev = readGDAL("data/dem_wi.tif")
+writeGDAL(elev, "data/dem_wi_out.tif")
+```
+
+```{r eval=FALSE}
+elev = raster("data/dem_wi.tif")
+writeRaster(elev, "data/dem_wi_out.tif")
+```
+
+```{r echo=FALSE}
+elev = raster("data/dem_wi.tif")
+```
+
+## Raster data structure
+
+The raster object `elev` has all the necessary pieces of spatial information:
+
+```{r}
+elev
+```
+
+## Raster data structure
+
+Which means we can make a map!
+
+```{r eval=FALSE}
+m = leaflet() %>%
+  addTiles() %>%
+  addRasterImage(elev, opacity=0.5)
+m
+```
+
+## Raster data structure
+
+```{r echo=FALSE, fig.width=8, fig.height=4}
+m = leaflet() %>%
+  addTiles() %>%
+  addRasterImage(elev, opacity=0.5)
+m
+```
+
+## Raster analysis {.columns-2}
+
+Remember that rasters are just matrices!
+
+Therefore, most matrix algebra can be applied to rasters
+
+```{r eval=FALSE}
+plot(
+  elev > 400,
+  col=c("red", "blue")
+)
+```
+
+<br><br><br><br><br><br><br>
+
+```{r echo=FALSE, fig.height=5, fig.width=5}
+par(bg=NA)
+plot(elev > 400, col=c("red", "blue"), legend=F)
+```
+
+## Raster analysis {.columns-2}
+
+Rasters can be easily converted to matrices to do more complex work.
+
+```{r eval=FALSE}
+lat_grad = apply(
+  as.matrix(elev),
+  1,
+  mean,
+  na.rm=T
+)
+plot(lat_grad, type="l")
+```
+
+<br><br><br><br><br>
+
+```{r echo=FALSE, fig.height=5, fig.width=3}
+par(bg=NA, mfrow=c(2,1), mar=c(2,4.1,2,0))
+image(as.matrix(elev))
+lat_grad = apply(
+  as.matrix(elev),
+  1,
+  mean,
+  na.rm=T
+)
+plot(lat_grad, type="l")
+```
+
+## Raster overlay
+
+Most raster analysis ultimately executes some sort of **overlay.**
+
+The issue:
+
+> To overlay two or more rasters, their projections, extents, and cellsizes must align perfectly.
+
+This is not necessarily an easy task.
+
+## Raster overlay | coordinate systems
+
+What is the highest point in each county?
+
+## Raster overlay | coordinate systems {.smaller}
+```{r include=FALSE}
+counties = readOGR("data", "WI_Counties")
+```
+
+```{r eval=FALSE}
+counties = readOGR("data", "WI_Counties")
+```
+
+```{r message=FALSE}
+proj4string(counties)
+proj4string(elev)
+```
+
+## Raster overlay | coordinate systems {.smaller .columns-2}
+
+```{r}
+extent(counties)
+```
+
+```{r}
+extent(elev)
+```
+
+## Raster overlay | coordinate systems
+
+```{r}
+cty_grid = rasterize(counties, elev, field="COUNTY_FIP")
+summary(cty_grid)
+```
+
+## Raster overlay | coordinate systems
 
 ## A Necessary Evil
 Here we'll discuss the situation where you will read in a table of points, that does not have any spatial reference system attached to it.
