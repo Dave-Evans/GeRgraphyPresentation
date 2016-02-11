@@ -1,5 +1,6 @@
 ---
 title: "GeRgraphy"
+subtitle: "An Introduction to Spatial Data Manipulation and Analysis in R"
 author: "Dave Evans and Aaron Ruesch"
 date: "16 March, 2016"
 output: ioslides_presentation
@@ -358,7 +359,7 @@ m
 
 Remember that rasters are just matrices!
 
-Therefore, most matrix algebra can be applied to rasters
+Therefore, most matrix operations can be applied to rasters. For example:
 
 ```{r eval=FALSE}
 plot(
@@ -408,22 +409,36 @@ Most raster analysis ultimately executes some sort of **overlay.**
 
 The issue:
 
-> To overlay two or more rasters, their projections, extents, and cellsizes must align perfectly.
+**To overlay two or more rasters, their projections, extents, and cellsizes must align perfectly.**
 
-This is not necessarily an easy task.
+This can be a difficult task.
+
+<div class="notes">
+So let's explore an example to illustrate a raster overlay procedure with conflicting projections.
+</div>
 
 ## Raster overlay | coordinate systems
 
 What is the highest point in each county?
 
+```
+# Pseudo-code
+1. Read in elevation data (raster grid)
+2. Read in county boundary data (polygons)
+3. Convert counties to raster grid that aligns with elevation grid
+4. Find maximum elevation gridcell within each county
+```
+
 ## Raster overlay | coordinate systems {.smaller}
-```{r include=FALSE}
+```{r}
 counties = readOGR("data", "WI_Counties")
 ```
 
-```{r eval=FALSE}
-counties = readOGR("data", "WI_Counties")
+```{r}
+elev
 ```
+
+## Raster overlay | coordinate systems {.smaller}
 
 ```{r message=FALSE}
 proj4string(counties)
@@ -447,9 +462,96 @@ cty_grid = rasterize(counties, elev, field="COUNTY_FIP")
 summary(cty_grid)
 ```
 
+<div class="notes">
+When we convert polygons to a raster grid, we use the rasterize function in the raster package. The first argument is the polygons we want to convert, the second argument is the raster grid that we want our output polygon grid to align with, and the field argument denotes the field of the county attribute table that we use to assign value to each grid cell in the output raster. 
+
+If we try rasterizing our county polygons when the polygons are in a different projection, we get a raster with all NAs.
+
+The reason is because the polygons are in a different coordinate system, so no polygons align with the elevation grid. So how do we fix this? We project the polygons into the coordinate system of the elevation grid.
+</div>
+
 ## Raster overlay | coordinate systems
 
-## A Necessary Evil
-Here we'll discuss the situation where you will read in a table of points, that does not have any spatial reference system attached to it.
+```{r}
+prj = proj4string(elev)
+cty_prj = spTransform(counties, prj)
+```
 
+<div class="notes">
+To do this, we use the spTransform function in the sp package.
+<div>
 
+## Raster overlay | coordinate systems {.smaller .columns-2}
+
+```{r}
+extent(cty_prj)
+```
+
+```{r}
+extent(elev)
+```
+
+## Raster overlay | coordinate systems {.columns-2}
+
+```{r eval=F}
+plot(elev)
+plot(cty_prj, add=TRUE)
+```
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+```{r echo=F, fig.height=4, fig.width=4}
+par(bg=NA)
+plot(elev)
+plot(cty_prj, add=TRUE)
+```
+
+## Raster overlay | coordinate systems
+
+```{r}
+cty_grid = rasterize(cty_prj, elev, field="COUNTY_FIP")
+summary(cty_grid)
+```
+
+## Raster overlay | coordinate systems {.smaller .columns-2}
+
+```{r}
+extent(cty_grid)
+```
+
+```{r}
+extent(elev)
+``` 
+
+## Raster overlay | coordinate systems {.smaller}
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+ovly = data.frame(
+  elev=getValues(elev),
+  cty=getValues(cty_grid)
+)
+
+hi_pt = ovly %>%
+  group_by(cty) %>%
+  mutate(
+    elev = (elev == max(elev, na.rm=T)) * elev
+  ) %>%
+  ungroup()
+
+elev = setValues(elev, hi_pt[["elev"]])
+elev[elev == 0] = NA
+hi_pt_sp = rasterToPoints(elev, spatial=T)
+```
+
+## Raster overlay | coordinate systems {.smaller}
+
+```{r echo=FALSE}
+elev = raster("data/dem_wi.tif")
+m = leaflet() %>%
+  addProviderTiles("Stamen.Terrain") %>%
+  addRasterImage(elev, opacity=0.5) %>%
+  addPolygons(data=cty_prj, stroke=T, color="grey", fill=F, weight=3) %>%
+  addMarkers(data=hi_pt_sp)
+m
+```
