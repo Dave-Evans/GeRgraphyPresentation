@@ -1,0 +1,557 @@
+---
+title: "GeRgraphy"
+subtitle: "An Introduction to Spatial Data Manipulation and Analysis in R"
+author: "Dave Evans and Aaron Ruesch"
+date: "16 March, 2016"
+output: ioslides_presentation
+---
+
+# GIS | Geographic Information Systems
+<div class="notes">
+GIS stands for Geographic Information Systems
+</div>
+
+## GIS | Geographic Information Systems
+
+ - incorporating
+ - storing
+ - manipulating
+ - analyzing
+ - displaying...
+
+<div class="notes">
+and is the term used for the dicipline and practice of incorporating, storing, manipulating, maintaining, analyzing, and displaying spatial data. GIS can be conceptualized as a suite of tools for working with spatial data. 
+</div>
+
+# Spatial Data</font>
+
+## What is <font color="red">spatial data?</font>
+
+Nonspatial data **has no** location information
+
+```{r}
+nonspatial = data.frame(
+  id=c(1,2,3,4),
+  data=rnorm(4)
+)
+print(nonspatial)
+```
+
+## What is <font color="red">spatial data?</font>
+
+Spatial data **has** location information
+
+The simplest spatial data are points on a map
+
+```{r}
+spatial = data.frame(
+  id=c(1,2,3,4),
+  data=rnorm(4),
+  x=runif(4,-180,180),
+  y=runif(4,-90,90)
+)
+print(spatial)
+```
+
+## What is <font color="red">spatial data?</font>
+
+Which we can convert to explicitly spatial data using the ```sp``` package. Most GIS packages in R store data as ```sp``` classes.
+
+```{r results="hide", warning=FALSE}
+library(sp)
+```
+
+## What is <font color="red">spatial data?</font> {.columns-2}
+
+The ```sp``` package has a method called ```coordinates``` that converts points to an ```sp``` class.
+
+```{r fig.show='hide'}
+coordinates(spatial) = ~ x + y
+class(spatial)
+plot(spatial, axes=T)
+```
+
+<br>
+
+```{r echo=FALSE, fig.width=4, fig.height=4}
+plot(spatial, axes=T)
+```
+
+## What is <font color="red">spatial data?</font>
+
+Spatial data also needs a reference system or **"projection"** that allows us to represent spatial features on a map. Projections can be thought of as simply a coordinate system with an origin that is relative to a known point in space.
+
+This is a whole field of mathematically intensive study termed "geodesy"
+
+Much of the field of geodesy is jam-packed in the ```rgdal``` package, which is a wrapper for the **G**eospatial **D**ata **A**bstration **L**ibrary
+
+```{r results="hide", warning=FALSE, message=FALSE}
+library(rgdal)
+```
+
+## What is <font color="red">spatial data?</font>
+
+```rgdal``` includes a comprehensive list of projections that are typically represented as a **string of parameters**.
+
+The most common is our standard latitude/longitude system, where the coordinates are angular and the origin is the equator directly south of Greenwich, England. The simplest projection string to denote this projections is:
+
+```"+proj=longlat"```
+
+To define the projection for ```spatial```, we write to its ```proj4string``` slot:
+
+```{r}
+proj4string(spatial) = "+proj=longlat"
+```
+
+Projections are a necessary evil for GIS users (to be continued)
+
+## What is <font color="red">spatial data?</font>
+
+With a projection associated with our spatial data, we can now relate it to other spatial data. In other words, let's make a map!
+
+```{r results="hide", warning=FALSE}
+library(leaflet)
+```
+
+```{r eval=FALSE}
+m = leaflet(data=spatial) %>%
+  addTiles() %>%
+  addMarkers()
+m
+```
+
+<div class="notes">
+Spatial data are data that are referenced to a location, that is the data have coordinates that pin it down to a location on the Earth. Examples are so myriad as to almost not be useful, e.g. restaurant location, streets, geologic strata, and precipitation, but they all have in common numeric values that reference the location of the data in X and Y (or longitude and latitude). EXPLANATION OF X AND Y.
+</div>
+
+## What is <font color="red">spatial data?</font>
+
+```{r echo=FALSE, fig.width=8, fig.height=4}
+m = leaflet(data=spatial) %>%
+  addTiles() %>%
+  addMarkers()
+m
+```
+
+<div class="notes">
+Arguably, the most common use of spatial data, and therefore GIS, are in data exploration, simply taking a look at where the phenomenon occur. This is useful in the sense that we can see obvious trends in the data, giving clues for further analysis, or merely checking our work, seeing if we have made mistakes. Additionally, spatial data is used for different kinds of analysis, leveraging the location data to make inferences. This analysis could take the form of selecting all wells that fall within certain soil types or in the construction of error terms in construction a statistical model.
+
+Maybe delete this paragraph...
+The most common software used in GIS are ArcGIS, produced by ESRI and QGIS, an open source analog, but there are many other software packages for GIS, both propietary and open-source. Any familiarity with the most popular GISs will show you that they are GUI-based and therefore much different from the look and feel of R, and, while R is not necessarily a replacement for the ArcGIS or QGIS, the analysis and plotting capability of R makes it a powerful GIS, and when it comes to model construction, R, and no suprise here, blows the common GIS platforms out of the water.
+</div>
+
+# Spatial data types
+
+## Spatial data types | Two main types: vector and raster {.columns-2}
+
+Vector = Polygons<br>
+Raster = Grid<br><br>
+Vector = Discrete<br>
+Raster = Continuous<br><br>
+Vector = Illustrator/Inkscape<br>
+Raster = Photoshop/GIMP<br>
+
+<br><br><br><br><br><br>
+
+![vector vs. raster graphics](img/VectorBitmapExample_small.png)
+
+<div class="notes">
+Maybe break this apart and put this into the respective intros of the datatypes below?
+Spatial data are divided up into two kinds of data, vector data and raster data. Vector data consist of the location data being defined by points. There are three main kinds of vector data: points, lines and polygons. Point data, as might be guessed, are data where each observation is defined by one coordinate pair, X and Y. In line data each observation is defined by a series of coordinate pairs that define a one dimensional path in space. Polygons are data where each observation is defined by coordinate pairs that trace out a two-dimensional area. Common uses of vector data are for phenomenon that have discrete boundaries and locations, e.g., wells and bird sitings for points, rivers and streets (at certain scales) for lines, and county borders and soil types for polygon data. Raster data are constructed as grids that are laid out over an area. Each cell of the grid contains some information about the phenomenon, but each cell will not be explicitly given a coordinate pair, rather every cell has the same length and width and so only the certain corners of the data need to be given coordinate pairs. Precipitation and temperature data are often portrayed as raster data because of the way they vary continuously over the space. Examples of the creation, input, and output of these data types are given below.
+
+Note to power users:
+The usual definitions of these data describe vector data as being for data with discrete boundaries and raster data for that which continuously varies. While this is true in general, it is essentially a matter of convenience that determines which type is best. For example, you could represent a dataset of bird sitings in a raster format, but because the grid is so sparse (NA or 'no siting' for nearly all the cells) it saves memory (and makes more inuitive sense) to store the data as points. Conversely, rainfall data can be stored as thousands of points, each marking the estimated rainfall at that location, but storing the data in this format is rather cumbersome if the area is large. 
+
+This presentation is meant to give an introduction to handling spatial data in R. It's intended audience are those with at least a basic knowledge of R and an interest in, though not necessarily knowledge of, working with spatial data. We will cover basic handling and manipulation of vector data and raster data, and then give a flyover of how coordinate reference systems work and how to work with them in R.
+</div>
+
+# Vector Data
+
+<div class="notes">
+The backbone of R's vector data utilities can be found in the packages 'sp', 'rgeos', and rgdal, with a lot of helpful tools being found in classInt, maptools, and many others. This presentation explore R's functionality with vector data, we will examine two different datasets: a set of wards with census data and election results, and polygons of soil types. (See the workspace directory for how these were put together.)
+</div>
+
+## Intro
+
+<div class="notes">
+Before the R stuff, the GIS stuff. Vector data can be easily described as shapes, and as we said they fall into three main categories, points lines and polygons. Most often, data are pacakged in collections, so we may have 72 polygons for the state of Wisconsin. Each of the counties (each shape) are referred to as a *feature*; this is a general rule about spatial data, each observation in the group is known as a feature. Each feature will have other data attached to it, these are known as *attributes* (for the entire dataset this often called the *attribute table*). As an example, the attributes of a soils dataset will decribe the sand and clay percentage for each polygon or for ward data they may hold the population information. 
+</div>
+
+## Vector I/O
+
+```{r}
+library(rgdal)
+```
+
+<div class="notes">
+To read in the data we'll use the rgdal package (which is the R implentation of the GDAL suite of tools). Our data is in the form of shapefiles, but that doesn't concern us here (a shapefile is comprise of several different files, so we leave off the extensions) and we just tell 'readOGR()' where our data is and what the name of the file is. We'll also show a plot of what we're working with as well as miscellaneous functions to help us tell us what we're working with.
+</div>
+
+## Vector I/O
+
+```{r}
+soils = readOGR(dsn="data", layer="soilsData")
+```
+```{r eval=FALSE}
+writeOGR(
+  soils,
+  "data",
+  "soilsData_out",
+  driver="ESRI Shapefile"
+)
+```
+
+<div class="notes">
+You can see that as we read it in, R tells us how many features, how many soil polygons, are in the data we just read in and how many fields are in the attribute table. Shapefiles are the most common non-database format for spatial data, but later we will cover working with a table of points.
+</div>
+
+## Vector data structure
+
+```{r}
+class(soils)
+slotNames(soils)
+```
+
+## Vector data structure {.smaller}
+
+Take a peak here at the top of our attribute table
+
+```{r}
+str(soils@data[,1:5])
+```
+
+*Make sure not to call ```head()``` or ```str()``` on a spatial object, as this spits out the first six features and all their attributes
+
+## Vector data structure {.smaller}
+
+```{r}
+str(soils@data[,1:10])
+```
+
+## Vector data structure {.smaller}
+
+```{r}
+str(soils@polygons[1])
+```
+
+## Vector data structure
+Number of features
+```{r}
+length(soils)
+```
+
+## Vector data structure
+
+Index the first feature with a slice
+```{r}
+poly_1 = soils[1,]
+```
+
+## Plotting {.columns-2}
+
+```{r eval=FALSE}
+plot(
+  soils,
+  main="Soils from Western WI",
+  col=rainbow(5)
+)
+```
+<br><br><br><br><br><br><br><br><br><br><br>
+```{r echo=F, fig.width=4, fig.height=5}
+par(bg=NA)
+plot(
+  soils,
+  main="Soils from Western WI",
+  col=rainbow(5)
+)
+```
+
+## Working with Vector Data
+
+# Raster Data
+
+<div class="notes">
+Raster data can be easily described as a grids.
+</div>
+
+## Intro
+
+A raster <font color="blue">**grid**</font> is rectangular. 
+
+<font color="blue">**Grid**</font> is another word for <font color="red">**matrix**</font>.
+
+<font color="blue">**Grid**</font> is another word for <font color="red">**image**</font>.
+
+A GIS raster <font color="blue">**grid**</font> is a <font color="red">**matrix/image**</font> with an associated location and projection.
+
+## Intro {.columns-2}
+
+At a minimum, a GIS raster grid contains:
+
+1. matrix of values
+2. projection
+3. reference point, often (x,y) of the lower-left corner
+4. cellsize
+
+<br><br><br><br><br><br><br><br>
+
+![minimal raster grid](img/minimal_raster_small.png)
+
+## Raster I/O
+
+The rgdal ```rgdal``` packages is primarily for I/O and projecting GIS data
+
+```{r message=FALSE, warning=FALSE}
+library(rgdal)
+```
+
+The ```raster``` package does everything ```rgdal``` does, but it includes lots of additional functionality.
+
+```{r message=FALSE, warning=FALSE}
+library(raster)
+```
+
+## Raster I/O
+
+```{r eval=FALSE}
+elev = readGDAL("data/dem_wi.tif")
+writeGDAL(elev, "data/dem_wi_out.tif")
+```
+
+```{r eval=FALSE}
+elev = raster("data/dem_wi.tif")
+writeRaster(elev, "data/dem_wi_out.tif")
+```
+
+```{r echo=FALSE}
+elev = raster("data/dem_wi.tif")
+```
+
+## Raster data structure
+
+The raster object `elev` has all the necessary pieces of spatial information:
+
+```{r}
+elev
+```
+
+## Raster data structure
+
+Which means we can make a map!
+
+```{r eval=FALSE}
+m = leaflet() %>%
+  addTiles() %>%
+  addRasterImage(elev, opacity=0.5)
+m
+```
+
+## Raster data structure
+
+```{r echo=FALSE, fig.width=8, fig.height=4}
+m = leaflet() %>%
+  addTiles() %>%
+  addRasterImage(elev, opacity=0.5)
+m
+```
+
+## Raster analysis {.columns-2}
+
+Remember that rasters are just matrices!
+
+Therefore, most matrix operations can be applied to rasters. For example:
+
+```{r eval=FALSE}
+plot(
+  elev > 400,
+  col=c("red", "blue")
+)
+```
+
+<br><br><br><br><br><br><br>
+
+```{r echo=FALSE, fig.height=5, fig.width=5}
+par(bg=NA)
+plot(elev > 400, col=c("red", "blue"), legend=F)
+```
+
+## Raster analysis {.columns-2}
+
+Rasters can be easily converted to matrices to do more complex work.
+
+```{r eval=FALSE}
+lat_grad = apply(
+  as.matrix(elev),
+  1,
+  mean,
+  na.rm=T
+)
+plot(lat_grad, type="l")
+```
+
+<br><br><br><br><br>
+
+```{r echo=FALSE, fig.height=5, fig.width=3}
+par(bg=NA, mfrow=c(2,1), mar=c(2,4.1,2,0))
+image(as.matrix(elev))
+lat_grad = apply(
+  as.matrix(elev),
+  1,
+  mean,
+  na.rm=T
+)
+plot(lat_grad, type="l")
+```
+
+## Raster overlay
+
+Most raster analysis ultimately executes some sort of **overlay.**
+
+The issue:
+
+**To overlay two or more rasters, their projections, extents, and cellsizes must align perfectly.**
+
+This can be a difficult task.
+
+<div class="notes">
+So let's explore an example to illustrate a raster overlay procedure with conflicting projections.
+</div>
+
+## Raster overlay | coordinate systems
+
+What is the highest point in each county?
+
+```
+# Pseudo-code
+1. Read in elevation data (raster grid)
+2. Read in county boundary data (polygons)
+3. Convert counties to raster grid that aligns with elevation grid
+4. Find maximum elevation gridcell within each county
+```
+
+## Raster overlay | coordinate systems {.smaller}
+```{r}
+counties = readOGR("data", "WI_Counties")
+```
+
+```{r}
+elev
+```
+
+## Raster overlay | coordinate systems {.smaller}
+
+```{r message=FALSE}
+proj4string(counties)
+proj4string(elev)
+```
+
+## Raster overlay | coordinate systems {.smaller .columns-2}
+
+```{r}
+extent(counties)
+```
+
+```{r}
+extent(elev)
+```
+
+## Raster overlay | coordinate systems
+
+```{r}
+cty_grid = rasterize(counties, elev, field="COUNTY_FIP")
+summary(cty_grid)
+```
+
+<div class="notes">
+When we convert polygons to a raster grid, we use the rasterize function in the raster package. The first argument is the polygons we want to convert, the second argument is the raster grid that we want our output polygon grid to align with, and the field argument denotes the field of the county attribute table that we use to assign value to each grid cell in the output raster. 
+
+If we try rasterizing our county polygons when the polygons are in a different projection, we get a raster with all NAs.
+
+The reason is because the polygons are in a different coordinate system, so no polygons align with the elevation grid. So how do we fix this? We project the polygons into the coordinate system of the elevation grid.
+</div>
+
+## Raster overlay | coordinate systems
+
+```{r}
+prj = proj4string(elev)
+cty_prj = spTransform(counties, prj)
+```
+
+<div class="notes">
+To do this, we use the spTransform function in the sp package.
+<div>
+
+## Raster overlay | coordinate systems {.smaller .columns-2}
+
+```{r}
+extent(cty_prj)
+```
+
+```{r}
+extent(elev)
+```
+
+## Raster overlay | coordinate systems {.columns-2}
+
+```{r eval=F}
+plot(elev)
+plot(cty_prj, add=TRUE)
+```
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+```{r echo=F, fig.height=4, fig.width=4}
+par(bg=NA)
+plot(elev)
+plot(cty_prj, add=TRUE)
+```
+
+## Raster overlay | coordinate systems
+
+```{r}
+cty_grid = rasterize(cty_prj, elev, field="COUNTY_FIP")
+summary(cty_grid)
+```
+
+## Raster overlay | coordinate systems {.smaller .columns-2}
+
+```{r}
+extent(cty_grid)
+```
+
+```{r}
+extent(elev)
+``` 
+
+## Raster overlay | coordinate systems {.smaller}
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+ovly = data.frame(
+  elev=getValues(elev),
+  cty=getValues(cty_grid)
+)
+
+hi_pt = ovly %>%
+  group_by(cty) %>%
+  mutate(
+    elev = (elev == max(elev, na.rm=T)) * elev
+  ) %>%
+  ungroup()
+
+elev = setValues(elev, hi_pt[["elev"]])
+elev[elev == 0] = NA
+hi_pt_sp = rasterToPoints(elev, spatial=T)
+```
+
+## Raster overlay | coordinate systems {.smaller}
+
+```{r echo=FALSE}
+elev = raster("data/dem_wi.tif")
+m = leaflet() %>%
+  addProviderTiles("Stamen.Terrain") %>%
+  addRasterImage(elev, opacity=0.5) %>%
+  addPolygons(data=cty_prj, stroke=T, color="grey", fill=F, weight=3) %>%
+  addMarkers(data=hi_pt_sp)
+m
+```
