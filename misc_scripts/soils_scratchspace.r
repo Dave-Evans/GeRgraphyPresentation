@@ -236,4 +236,18 @@ tst = data.frame(x=514399.2290012, y=292438.07282976003)
 coordinates(tst) <- ~ x + y
 plot(soils)
 plot(tst, col='red', add=T)
-    
+
+
+##text(coordinates(pts), labels=as.character(pts@coords), cex=0.4, pos=3)
+df = data.frame(
+    x=c(1, 2, 3,-2, 1),
+    y=c(0, 2, 0, 4, 0)
+)
+pts = SpatialPoints(df)
+lnes = SpatialLines(list(Lines(Line(pts[-5]), ID='a')))
+plys = SpatialPolygons(list(pts))
+par(mfrow=c(3,1))
+plot(pts)
+plot(lnes)
+
+
