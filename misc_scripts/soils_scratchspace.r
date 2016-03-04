@@ -218,7 +218,7 @@ wells = spTransform(
     wells,
     soils@proj4string)
 
-soils = gBuffer(soils, byid=T, width=0)
+soils = gBuffer(soils, byid=T, width=-1)
 # have_wells = soils[unique(unlist(gIntersects(wells, soils, byid=T, returnDense=F))),]
 # have_wells = gIntersection(soils, wells)
 

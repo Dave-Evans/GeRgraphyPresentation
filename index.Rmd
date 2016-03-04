@@ -405,30 +405,139 @@ plot(
 By defining here we mean assign the well data some sort of CRS. It just came from a tab delimited file of coordinates so it doesn't know what those numbers mean. We assign it a CRS so it knows how to project it or transform those points to the same projection as the soils data.
 </div> 
 
+## Vector Data Geometry Relationships {.columns-2 .smaller}
+How do two shapes relate?
+Intersects for if the geometries have at least one point in common or no points in common (disjoint)
 
 
-* Example scenario, demo `gIntersects` and how to use introduce other types of spatial relations
+<br><br><br><br><br><br><br><br><br><br><br>
+```{r echo=F, message=F, fig.width=4, fig.height=5}
+library(rgeos)
+p1 = readWKT("POLYGON((0 0,1 0,1 1,0 1,0 0))")
+p2 = readWKT("POLYGON((0.5 1,0 2,1 2,0.5 1))")
+p3 = readWKT("POLYGON((0.5 0.5,0 1.5,1 1.5,0.5 0.5))")
 
-* Use `over` to extract attributes and select those above a threshold of sand
+l1 = readWKT("LINESTRING(0 3,1 1,2 2,3 0)")
+l2 = readWKT("LINESTRING(1 3.5,3 3,2 1)")
+l3 = readWKT("LINESTRING(-0.1 0,-0.1 1.1,1 1.1)")
 
-* Introduce buffering and suggest trying with that
+par(mfrow=c(1,2))
+plot(p1,col='blue',border='blue',ylim=c(0,2.5));plot(p2,col='black',add=TRUE,pch=16)
+title(paste("Intersects:",gIntersects(p1,p2),
+            "\nDisjoint:",gDisjoint(p1,p2)))
 
-## Outline 3{.smaller}
+plot(p1,col='blue',border='blue',ylim=c(0,2.5));plot(p3,col='black',add=TRUE,pch=16)
+title(paste("Intersects:",gIntersects(p1,p3),
+            "\nDisjoint:",gDisjoint(p1,p3)))
+```
+<div class="notes">
+Heard these referred to as "Binary Predicates"
+Now that they have the same projection we can look at how they relate. We'll assume that we are interested in what the soil texture is at the location of the well sites. But first an intro into geometric relationships
+</div>
 
-Part II 
+## Vector Data Geometry Relationships {.columns-2 .smaller}
+List other relational operators.
+Dave, also demo clipping or unioning or...some geometry manipulation
+Introduce using rgeos examples
+## Vector Data Example {.smaller}
+```{r error=T}
+gIntersects(wells, soils)
+```
 
-* introduce ward data
+<div class="notes">
+In practice its a bit more complicated, our question is which soil polygons have wells in them?
+</div>
 
-* scenario for modeling: predict %dem turnout
 
-* use regular linear regression, moran I the residuals
+## Vector Data Example {.smaller}
+```{r tidy=T}
+## Adding some magic...
+soils = gBuffer(soils, width=0, byid=T)
+gIntersects(wells, soils, byid=T)
+```
 
-* construct neighborhood weights using adjacency and distance, then construct model
+<div class="notes">
+A matrix denoting when there is an intersections
+</div>
 
-* take a look at results
+## Vector Data Example {.smaller}
+```{r tidy=T}
+gIntersects(wells, soils, byid=T, returnDense=F)
+```
+
+<div class="notes">
+A matrix denoting when there is an intersections
+</div>
+
+## Vector Data Example {.columns-2 .smaller}
+```{r tidy=T, eval=F}
+indxs = unique(unlist(gIntersects(wells, soils, byid=T, returnDense=F)))
+soils_with_wells = soils[indxs,]
+plot(
+    soils_with_wells,
+    col=rainbow(5)
+)
+plot(
+    wells,
+     add=T,
+     cex=4
+)
+```
+
+<br><br><br><br><br><br><br><br><br><br><br>
+```{r echo=F, message=F, fig.width=4, fig.height=5}
+indxs = unique(unlist(gIntersects(wells, soils, byid=T, returnDense=F)))
+soils_with_wells = soils[indxs,]
+plot(
+    soils_with_wells,
+    col=rainbow(5)
+)
+plot(
+    wells,
+     add=T,
+     cex=4
+)
+```
+<div class="notes">
+You'll have to pardon me, I don't yet know magrittr piping...
+</div>
+
+## Vector Data Example {.smaller}
+Could iterate through intersect list or...
+```{r}
+soilsDat = over(wells, soils)
+class(soilsDat)
+soilsDat$id = 1:15
+
+wells = merge(wells, soilsDat, by.x="pts.data.id", by.y="id")
+head(wells@data)
+```
+
+<div class="notes">
+Alternatively, we could use a helper function and extract this data to the well points. 
+</div>
+
+
+## Vector Data Example {.smaller}
+Perhaps we want to expand our our of concern
+```{r tidy=T, eval=T}
+## buffer of 50 meters (because of our projection)
+##  around each well
+wells_area = gBuffer(wells, byid=T, width=50)
+class(wells_area)
+soils@data = subset(
+    soils@data,
+    select=c("Sand1", "Silt1"))
+head(over(wells_area, soils, fn=mean))
+```
+
+<div class="notes">
+Buffering is a common geoprocessing routine that is run on vector files. It will expand the data out (or in) a given distance. Now our analysis is a little complicated by the fact that we may have more than one soil polygon intersecting with each circle, so we'll use an aggregation function with over
+</div>
 
 ## Outline 4{.smaller}
-Part III
+
+Part II
 
 * Scenario create map of %dem with indication of percent turnout.
 
@@ -443,6 +552,296 @@ Part III
 * legend manipulation
 
 * creating centroids and scaling proportionally
+
+## Vector Data Plotting {.columns-2 .smaller}
+SUBSET THE DATA HERE DAVE -- LESS FIELDS
+```{r tidy=T, eval=T}
+
+wards = readOGR(
+    "data",
+    "WardData"
+)
+names(wards@data)
+```
+<br><br><br><br><br><br><br><br><br><br><br>
+```{r echo=F, message=F, fig.width=4, fig.height=5}
+plot(wards, main="Senate 24")
+```
+<div class="notes">
+We're going to switch over to some ward data now. These are voting wards for the 24th senate district of Wisconsin. 
+They contain election returns for past elections as well as demography data from the census
+</div>
+
+## Vector Data Plotting {.columns-2 .smaller}
+Scenario tasked with:
+
+* Create map of percent Democratic votes by ward
+
+* Also display percent turnout
+
+
+<br><br><br><br><br><br><br><br><br><br><br>
+
+```{r echo=F, message=F, fig.width=4, fig.height=5}
+plot(wards, main="Starting point")
+```
+
+<div class="notes">
+We'll assume we have to do this for every senate district but we'll do just the 24th instead of all 33, assuming we can then loop through the rest.
+</div>
+
+## Vector Data Plotting {.columns-2 .smaller}
+Think about distribution and how to classify?
+```{r eval=F, message=F, fig.width=4, fig.height=5}
+par(mfrow(3,1))
+hist(wards@data$SEN_DEM, main="Distribution of Dem")
+
+```
+
+<br><br><br><br><br><br><br><br><br><br><br>
+```{r echo=F, message=F, fig.width=4, fig.height=5}
+plot(wards, main="Starting point")
+```
+
+<div class="notes">
+Think about the shape of the data and what classification scheme we would like to use.
+</div>
+
+## Vector Data Plotting {.columns-2 .smaller}
+
+<div class="notes">
+
+</div>
+
+## Vector Data Plotting {.columns-2 .smaller}
+
+<div class="notes">
+
+</div>
+
+
+* Scenario create map of %dem with indication of percent turnout.
+
+* Walk throug various iterations, raise problems then solve
+
+* Show classInt and creating the color vector
+
+* legend manipulation
+
+* creating centroids and scaling proportionally
+
+## Vector Data Plotting {.smaller}
+```{r eval=F}
+options(stringsAsFactors=F)
+source("./misc_scripts/function_proper_legend.r")
+library(rgdal)
+library(rgeos)
+library(foreign)
+library(classInt)
+library(RColorBrewer)
+library(scales)
+
+wards@data$SEN_PERC_DEM = with(wards@data, SEN_DEM/SEN_TOT)
+wards@data$SEN_PERC_TURN = with(wards@data, SEN_TOT/PERSONS1)
+```
+<div class="notes">
+
+</div>
+
+## Vector Data Plotting {.smaller}
+```{r eval=F}
+## defining number of classes
+num_classes = 6
+## the color palette
+pal = brewer.pal(num_classes, "RdBu")
+## the class intervals to use for the colors
+class_ints = classIntervals(
+    wards@data$SEN_PERC_DEM,
+    num_classes,
+    style="quantile")
+## grab the colors for plotting
+colrs = findColours(class_ints, pal)
+```
+<div class="notes">
+
+</div>
+
+## Vector Data Plotting {.smaller}
+```{r eval=F}
+## Custom legend formatting
+source("./misc_scripts/function_proper_legend.r")
+legtxt = properLegend(colrs, 2)
+plot(wards,
+     col=colrs,
+     main="Senate 24",
+     border=NA)
+
+legend("topleft",
+       legtxt,
+       title="Proportion Democrat",
+       fill=pal,
+       bty='n'
+)
+```
+
+<div class="notes">
+
+</div>
+## Vector Data Plotting {.smaller}
+```{r echo=F, fig.height=5, fig.width=8, message=FALSE, warning=FALSE}
+options(stringsAsFactors=F)
+source("./misc_scripts/function_proper_legend.r")
+library(rgdal)
+library(rgeos)
+library(foreign)
+library(classInt)
+library(RColorBrewer)
+library(scales)
+
+wards@data$SEN_PERC_DEM = with(wards@data, SEN_DEM/SEN_TOT)
+wards@data$SEN_PERC_TURN = with(wards@data, SEN_TOT/PERSONS1)
+
+wards_centroids = gCentroid(wards, byid=T)
+wards_centroids = SpatialPointsDataFrame(
+    gCentroid(wards, byid=T), 
+    over(wards_centroids, wards)
+)
+
+
+## defining number of classes
+num_classes = 6
+## the color palette
+pal = brewer.pal(num_classes, "RdBu")
+## the class intervals to use for the colors
+class_ints = classIntervals(wards@data$SEN_PERC_DEM, num_classes, style='quantile')
+## grab the colors for plotting
+colrs = findColours(class_ints, pal)
+
+legtxt = properLegend(colrs, 2)
+
+plot(wards,
+     col=colrs,
+     main="Senate 24",
+     border=NA)
+
+# plot(wards_centroids,
+#      pch=20,
+#      cex=(wards_centroids@data$SEN_PERC_TURN),
+#      col=alpha('black', 0.5),
+#      add=T)
+
+legend("topleft",
+       legtxt,
+       title="Proportion Democrat",
+       fill=pal,
+       bty='n'
+)
+#legend("topright",
+#        c("20%", '50%', '80%'),
+#        pch=20,
+#        pt.cex=c(0.2, 0.5, 0.8),
+#        col=alpha('black', 0.5),
+#        bty='n',
+#        title="Percent\nTurnout"
+# )
+```
+
+<div class="notes">
+
+</div>
+
+
+## Vector Data Modeling {.smaller}
+```{r eval=F}
+```
+
+<div class="notes">
+
+</div>
+
+## Vector Data Modeling {.smaller}
+```{r eval=F}
+```
+
+<div class="notes">
+
+</div>
+
+## Vector Data Modeling {.columns-2 .smaller}
+wards_centroids = gCentroid(wards, byid=T)
+wards_centroids = SpatialPointsDataFrame(
+    gCentroid(wards, byid=T), 
+    over(wards_centroids, wards)
+)
+<div class="notes">
+
+</div>
+
+## Vector Data Modeling {.columns-2 .smaller}
+
+<div class="notes">
+
+</div>
+
+
+
+
+## Outline 3{.smaller}
+
+Part III
+
+* introduce ward data
+
+* scenario for modeling: predict %dem turnout
+
+* use regular linear regression, moran I the residuals
+
+* construct neighborhood weights using adjacency and distance, then construct model
+
+* take a look at results
+
+
+
+## Vector Data Modeling {.smaller}
+```{r}
+library(spdep)
+wards@data$SEN_PERC_DEM = with(wards@data, SEN_DEM/SEN_TOT)
+wards@data$SEN_PERC_TURN = with(wards@data, SEN_TOT/PERSONS1)
+wards@data$CON_PERC_DEM = with(wards@data, CON_DEM/CON_TOT)
+wards@data$PRES_PERC_DEM = with(wards@data, PRES_DE/PRES_TO)
+
+wards = subset(wards, !is.nan(wards@data$SEN_PERC_DEM))
+neighborhood_binary = poly2nb(wards)
+list_of_weights = nb2listw(neighborhood_binary, zero.policy=T)
+moran.test(wards@data$SEN_PERC_DEM, list_of_weights, alternative="two.sided")
+spat_lin_reg = spautolm(
+    SEN_PERC_DEM ~ WHITE + BLACK + PRES_PERC_DEM + CON_PERC_DEM,
+    data=wards,
+    family="SAR",
+    listw=list_of_weights)
+```
+<div class="notes">
+
+</div>
+
+
+
+## Vector Data Modeling {.columns-2 .smaller}
+
+<div class="notes">
+
+</div>
+
+
+* scenario for modeling: predict %dem turnout
+
+* use regular linear regression, moran I the residuals
+
+* construct neighborhood weights using adjacency and distance, then construct model
+
+* take a look at results
+
+
 
 
 

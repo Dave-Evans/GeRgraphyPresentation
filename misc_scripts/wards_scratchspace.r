@@ -50,6 +50,8 @@ writeOGR(
 )
 
 ### Scratch
+library(RColorBrewer)
+library(classInt)
 wards = readOGR(
     dsn="./data",
     layer="WardData"
@@ -70,7 +72,8 @@ num_classes = 6
 ## the color palette
 pal = brewer.pal(num_classes, "RdBu")
 ## the class intervals to use for the colors
-class_ints = classIntervals(wards@data$SEN_PERC_DEM, num_classes)
+class_ints = classIntervals(wards@data$SEN_PERC_DEM, num_classes, style='equal')
+plot(class_ints, pal=pal)
 ## grab the colors for plotting
 colrs = findColours(class_ints, pal)
 
