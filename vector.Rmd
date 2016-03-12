@@ -94,7 +94,6 @@ Wonderful document on CRS in R <a href="https://www.nceas.ucsb.edu/~frazier/RSpa
 Note that we are playing fast and loose with our terminology here; terminology that would make an uptight geographer shriek. The idea is just to get us up and running and working well with these concepts.
 </div>
 
-
 ## What is <font color="red">spatial data?</font> {.smaller}
 
 <div style="overflow-y: scroll; height: 400px;">
@@ -280,16 +279,38 @@ mtext("building footprint or county", cex=mcex)
 
 ```
 
-## Vector Data Intro {.smaller}
+## Vector Data Intro
+Whether, points, lines or polygons, *comprised of coordinate pairs*
 
-Geometry is associated with other data, known as _attribute data_.
-Conceptualize as a row in a table
-![think like a table](img/table_concept.png)
-
-Each row is one observation, referred to as a _feature_. This becomes important later, are we referring to individual features or to the entire geometry.
+```{r echo=F}
+#, results="hide", warning=FALSE, message=FALSE, fig.width=8, fig.height=4
+sl2 = SpatialLines(list(S2))
+crdTxt = apply(l2, 1, FUN=function(x) paste(x[1], x[2], sep=", "))
+plot(sl2,lwd=2)
+points(x=l2[1:3], y=l2[4:6],pch=19,cex=2)
+text(x=l2[1:3], y=l2[4:6], labels=crdTxt, pos=3, cex=2, offset=1)
+```
 
 <div class="notes">
-Geometry is just another field in the table, mention multipart features
+All of vector data is comprised of coordinate pairs.
+Points are the simplest, merely coordinate pairs.
+Lines are coordinate pairs but ordered, so it is understood that the line will connect the points in a certain order.
+Polygons, also ordered pairs, but returns to the starting point and fills the space in between.
+There are more complicated geometry but those will not be considered here
+</div>
+
+## Vector Data Intro {.smaller}
+
+Think like a table, each row (observation) is referred to as a _feature_.
+
+![think like a table](img/table_concept.png)
+
+The other data is often referred to as the _attribute table_ and or as _attribute data_.
+
+Each row is one observation (one feature), this becomes important later, are we referring to individual features or to the entire geometry.
+
+<div class="notes">
+Geometry is just another field in the table
 </div>
 
 ## Vector Data Basics {.smaller}

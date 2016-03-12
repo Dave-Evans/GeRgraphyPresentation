@@ -42,7 +42,11 @@ mtext("distance to river or lead concentration")
 ## sixth plot
 plot(1, type="n", axes=F, xlab="", ylab="")
 
-
+sl2 = SpatialLines(list(S2))
+crdTxt = apply(l2, 1, FUN=function(x) paste(x[1], x[2], sep=", "))
+plot(sl2)
+points(x=l2[1:3], y=l2[4:6],pch=19)
+text(x=l2[1:3], y=l2[4:6], labels=crdTxt, pos=3)
 ## Difference
 library(rgeos)
 library(scales)
