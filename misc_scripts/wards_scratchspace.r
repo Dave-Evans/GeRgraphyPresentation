@@ -89,6 +89,7 @@ plot(wards_centroids,
      cex=(wards_centroids@data$PERC_TURN),
      col=alpha('black', 0.5),
      add=T)
+
 plot(wards_centroids,
      pch=1,
      cex=1,

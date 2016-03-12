@@ -218,7 +218,7 @@ wells = spTransform(
     wells,
     soils@proj4string)
 
-soils = gBuffer(soils, byid=T, width=-1)
+soils = gBuffer(soils, byid=T, width=0)
 # have_wells = soils[unique(unlist(gIntersects(wells, soils, byid=T, returnDense=F))),]
 # have_wells = gIntersection(soils, wells)
 
@@ -250,4 +250,6 @@ par(mfrow=c(3,1))
 plot(pts)
 plot(lnes)
 
-
+cent = gCentroid(soils)
+bff = gBuffer(cent, width=250)
+int = gIntersection(soils, bff, byid=TRUE)
