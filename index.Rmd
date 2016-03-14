@@ -85,7 +85,7 @@ This is a whole field of mathematically intensive study termed "geodesy"
 Much of the field of geodesy is jam-packed in the `rgdal` and `sp` packages, which use the PROJ.4 library for projections and transformations.
 
 ```{r results="hide", warning=FALSE, message=FALSE}
-##While automatically load sp for us too
+## will automatically load sp for us too
 library(rgdal)
 ```
 Wonderful document on CRS in R <a href="https://www.nceas.ucsb.edu/~frazier/RSpatialGuides/OverviewCoordinateReferenceSystems.pdf">here</a>
@@ -93,7 +93,6 @@ Wonderful document on CRS in R <a href="https://www.nceas.ucsb.edu/~frazier/RSpa
 <div class="notes">
 Note that we are playing fast and loose with our terminology here; terminology that would make an uptight geographer shriek. The idea is just to get us up and running and working well with these concepts.
 </div>
-
 
 ## What is <font color="red">spatial data?</font> {.smaller}
 
@@ -120,7 +119,6 @@ Projections are a necessary evil for GIS users (to be continued)
 <div class="notes">
 where the coordinates are angular and the origin is the equator directly south of Greenwich, England. The simplest projection string to denote this projections is:
 </div>
-
 
 ## What is <font color="red">spatial data?</font>
 
@@ -235,7 +233,6 @@ plot(1, type="n", axes=F, xlab="", ylab="")
 Vector data are commonly used for representing discrete phenomenon while rasters are for representing phenomenon that vary continuously over space, things that are suited to being represented by a surface.
 </div>
 
-
 # Vector Data
 
 <div class="notes">
@@ -280,23 +277,38 @@ mtext("building footprint or county", cex=mcex)
 
 ```
 
-## Vector Data Intro {.smaller}
+## Vector Data Intro
+Whether, points, lines or polygons, *comprised of coordinate pairs*
 
-```{r}
-sl2 = SpatialLines(list(S2))#,S2
+```{r echo=F}
+#, results="hide", warning=FALSE, message=FALSE, fig.width=8, fig.height=4
+sl2 = SpatialLines(list(S2))
+crdTxt = apply(l2, 1, FUN=function(x) paste(x[1], x[2], sep=", "))
+plot(sl2,lwd=2)
+points(x=l2[1:3], y=l2[4:6],pch=19,cex=2)
+text(x=l2[1:3], y=l2[4:6], labels=crdTxt, pos=3, cex=2, offset=1)
 ```
 
+<div class="notes">
+All of vector data is comprised of coordinate pairs.
+Points are the simplest, merely coordinate pairs.
+Lines are coordinate pairs but ordered, so it is understood that the line will connect the points in a certain order.
+Polygons, also ordered pairs, but returns to the starting point and fills the space in between.
+There are more complicated geometry but those will not be considered here
+</div>
+
 ## Vector Data Intro {.smaller}
 
-Geometry is associated with other data, known as _attribute data_.
-Conceptualize as a row in a table
+Think like a table, each row (observation) is referred to as a _feature_.
 
 ![think like a table](img/table_concept.png)
 
-Each row is one observation, referred to as a _feature_. This becomes important later, are we referring to individual features or to the entire geometry.
+The other data is often referred to as the _attribute table_ or as _attribute data_.
+
+Each row is one observation (one feature), this becomes important later, as we'll need to refer to individual features or to the entire geometry.
 
 <div class="notes">
-Geometry is just another field in the table, mention multipart features
+Geometry is just another field in the table
 </div>
 
 ## Vector Data Basics {.smaller}
@@ -481,7 +493,7 @@ plot(
     pch=19
 )
 ```
-<br><br><br><br><br><br><br><br><br><br><br>
+<br><br>
 ```{r echo=F, fig.width=4, fig.height=5}
 par(bg=NA)
 
@@ -493,7 +505,7 @@ wells = spTransform(
 plot(
     soils
 )
-    plot(
+plot(
     wells,
     add=T,
     cex=2,
