@@ -615,7 +615,7 @@ p3 = readWKT("POLYGON((0.5 0.5,0 1.5,1 1.5,0.5 0.5))")
 # title(paste("Intersects:",gIntersects(p1,p2),
 #             "\nDisjoint:",gDisjoint(p1,p2)))
 
-plot(p1,col='blue',border='blue',ylim=c(0,2.5));plot(p3,col='black',add=F,pch=16)
+plot(p1,col='blue',border='blue',ylim=c(0,2.5));plot(p3,col='black',add=T,pch=16)
 title(paste("Intersects:",gIntersects(p1,p3),
             "\nDisjoint:",gDisjoint(p1,p3)))
 ```
@@ -707,7 +707,7 @@ Alternatively, we could use a helper function and extract this data to the well 
 </div>
 
 ## Vector data example {.smaller}
-Perhaps we want to expand our our of concern
+Perhaps we want to expand our area of concern
 ```{r tidy=T, eval=T}
 ## buffer of 50 meters (because of our projection)
 ##  around each well
