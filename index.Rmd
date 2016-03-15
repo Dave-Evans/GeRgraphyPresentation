@@ -78,9 +78,21 @@ plot(spatial, axes=T)
 ```
 
 ## What is <font color="red">spatial data?</font> {.smaller}
-Spatial data also needs a reference system or **"projection"** that allows us to represent spatial features on a map. Projections can be thought of as simply a coordinate system with an origin that is relative to a known point in space.
+
+Spatial data also needs a **coordinate reference system** or **"projection"** that allows us to represent spatial features on a map. 
+
+<div style="overflow-y: scroll; height: 400px;">
+![different map projections](img/map_projections.png)
+</div>
+
+<div class="notes">
+Projections can be thought of as simply a coordinate system with an origin that is relative to a known point in space.
 
 This is a whole field of mathematically intensive study termed "geodesy"
+
+</div>
+
+## What is <font color="red">spatial data?</font> {.smaller}
 
 Much of the field of geodesy is jam-packed in the `rgdal` and `sp` packages, which use the PROJ.4 library for projections and transformations.
 
@@ -92,19 +104,12 @@ Wonderful document on CRS in R <a href="https://www.nceas.ucsb.edu/~frazier/RSpa
 
 <div class="notes">
 Note that we are playing fast and loose with our terminology here; terminology that would make an uptight geographer shriek. The idea is just to get us up and running and working well with these concepts.
-</div>
+
+Coordinate reference systems are ways of referencing X and Y (longitude and latitdue) to specific points on the Earth. When they don't match, identical points won't lay on top of one another.</div>
 
 ## What is <font color="red">spatial data?</font> {.smaller}
 
-<div style="overflow-y: scroll; height: 400px;">
-![different map projections](img/map_projections.png)
-</div>
-
-<div class="notes">Coordinate reference systems are ways of referencing X and Y (longitude and latitdue) to specific points on the Earth. When they don't match, identical points won't lay on top of one another.</div>
-
-## What is <font color="red">spatial data?</font> {.smaller}
-
-```rgdal``` includes a comprehensive list of projections that are typically represented as a **string of parameters** according to the PROJ.4 specifications. The simplest is a latitude/longitude system denoted as
+PROJ.4 (in`rgdal`) includes a comprehensive list of projections that are typically represented as a **string of parameters**. The simplest is a latitude/longitude system denoted as
 
 ```"+proj=longlat"```
 
@@ -239,7 +244,7 @@ Vector data are commonly used for representing discrete phenomenon while rasters
 The backbone of R's vector data utilities can be found in the packages 'sp', 'rgeos', and rgdal, with a lot of helpful tools being found in classInt, maptools, and many others. This presentation explore R's functionality with vector data, we will examine two different datasets: a set of wards with census data and election results, and polygons of soil types. (See the workspace directory for how these were put together.)
 </div>
 
-## Vector Data Intro {.smaller}
+## Vector data intro {.smaller}
 
 ```{r echo=F, results="hide", warning=FALSE, message=FALSE, fig.width=8, fig.height=4}
 library(rgeos)
@@ -277,7 +282,7 @@ mtext("building footprint or county", cex=mcex)
 
 ```
 
-## Vector Data Intro
+## Vector data intro
 Whether, points, lines or polygons, *comprised of coordinate pairs*
 
 ```{r echo=F}
@@ -297,7 +302,7 @@ Polygons, also ordered pairs, but returns to the starting point and fills the sp
 There are more complicated geometry but those will not be considered here
 </div>
 
-## Vector Data Intro {.smaller}
+## Vector data intro {.smaller}
 
 Think like a table, each row (observation) is referred to as a _feature_.
 
@@ -311,7 +316,7 @@ Each row is one observation (one feature), this becomes important later, as we'l
 Geometry is just another field in the table
 </div>
 
-## Vector Data Basics {.smaller}
+## Vector data basics {.smaller}
 Data Input/Output
 
 ```{r}
@@ -334,7 +339,7 @@ writeOGR(
  You can see that as we read it in, R tells us how many features, how many soil polygons, are in the data we just read in and how many fields are in the attribute table. Shapefiles are the most common non-database format for spatial data, but later we will cover working with a table of points.
 </div>
 
-## Vector Data Basics {.smaller}
+## Vector data basics {.smaller}
 
 Other ways of creating of spatial data from list of coordinates: 
 ```{r}
@@ -347,7 +352,7 @@ class(wells)
 Create a point layer from a flat file of coordinates
 </div>
 
-## Vector Data Basics {.smaller}
+## Vector data basics {.smaller}
 Helper functions:
 ```{r}
 class(soils)
@@ -358,7 +363,7 @@ length(soils)
 There a number of functions that are incredibly useful for understanding what sort of data you are working with
 </div>
 
-## Vector Data Basics {.smaller}
+## Vector data basics {.smaller}
 Accessing attribute data
 ```{r}
 str(soils@data[,1:10])
@@ -367,7 +372,7 @@ str(soils@data[,1:10])
 attribute data is stored in the data slot, using shape@data
 </div>
 
-## Vector Data Basics {.smaller}
+## Vector data basics {.smaller}
 The geometry stored in the polygons slot
 ```{r}
 str(soils@polygons[1])
@@ -377,7 +382,7 @@ Take a look at the structure of the shape itself
 *You probably don't want to call ```head()``` or ```str()``` on a large spatial object, as this spits out the first six features and all their attributes
 </div>
 
-## Vector Data Basics {.smaller}
+## Vector data basics {.smaller}
 A number of common functions have methods for spatial data
 ```{r}
 silty = subset(soils, Silt1 > 70)
@@ -419,7 +424,7 @@ plot(
 )
 ```
 
-## Coordinate Reference Systems | A (Very) Brief Break {.smaller}
+## Coordinate reference systems | A (very) brief break {.smaller}
 
 A coordinate reference system (CRS) defines the surface of the world. 
 If they don't match, errors and issues can arise
@@ -430,7 +435,7 @@ Very often we'll have questions that involve two different sets of spatial data,
 When working with two different layers it is important that they have the same cooridnate reference system. If they don't then they won't line up properly. To give the sense of what this is like for geographers, think of working with mixed measurements in feet and meters and not doing anything to correct them.
 </div>
 
-## Coordinate Reference Systems | A (Very) Brief Break {.columns-2 .smaller}
+## Coordinate reference systems | A (very) brief break {.columns-2 .smaller}
 To illustrate issues, where are the wells in relation to the soil?
 
 ```{r eval=FALSE}
@@ -443,13 +448,16 @@ plot(
 )
 plot(
     wells,
-    add=T
+    add=T,
+    cex=2,
+    col='red',
+    pch=19
 )
 ```
 <br><br><br><br><br><br><br><br><br><br><br>
 
 ```{r echo=F, fig.width=4, fig.height=5}
-
+par(bg=NA)
 plot(
     soils,
     main="Soils"
@@ -463,20 +471,21 @@ plot(
 Okay, so what's going on here? 
 </div> 
 
-## Coordinate Reference Systems | A (Very) Brief Break {.columns-2 .smaller}
+## Coordinate reference systems | A (very) brief break {.columns-2 .smaller}
 
 ```{r}
 print(wells@proj4string)
 print(soils@proj4string)
 
-coordinates(soils)[c(1,72)]
 coordinates(wells)[c(1,16)]
+coordinates(soils)[c(1,72)]
+
 ```
 <div class="notes">
     Errors like this, and I still make them are how I learned about coordinate reference systems, so we'll take a brief little diversion here to explain how to deal with this. Notice here how there is no information associated with the points but there is with the soils. Also just note how the coordinates look (and its not always so easy to tell) but you can see that we have different units! 
 </div>
 
-## Coordinate Reference Systems | A (Very) Brief Break {.columns-2 .smaller}
+## Coordinate reference systems | A (very) brief break {.columns-2 .smaller}
 Solution: _define_ the CRS then _project_ the points to CRS of the soils data
 ```{r eval=FALSE}
 wells@proj4string = CRS(
@@ -519,10 +528,75 @@ By defining here we mean assign the well data some sort of CRS. It just came fro
 Note that we are using what is known as the proj4 standard of specifying the crs. see spatialreference.org for any and all projections
 </div> 
 
-## Vector Data Geometry Relationships {.columns-2 .smaller}
-How do two shapes relate?
-Sometimes we want to have a yes/no true/false answer to how two geometries relate.
-_Spatial Predicates_ is the term for this
+## Vector data {.smaller}
+
+Another kind of relationship functions return the geometry
+How do we get the overlapping area? 
+
+```{r echo=F, warning=F, fig.width=6, fig.height=5}
+par(bg=NA)
+library(scales)
+x = readWKT("POLYGON((1 0,0 1,1 2,2 1,1 0))")
+y = readWKT("POLYGON((2 0,1 1,2 2,3 1,2 0))")
+
+xy.union = gUnion(x,y)
+bbox = gBuffer(gEnvelope(xy.union),width=0.5,joinStyle='mitre',mitreLimit=3)
+par(mar=c(0.5,0.5,0.5,0.5))
+plot(bbox, border='white')
+plot(x, add=T, col=alpha('red', 0.5))
+plot(y, add=T, col=alpha('blue', 0.5))
+```
+<div class="notes">
+Arguably this is more common
+</div>
+
+## Vector data {.smaller}
+We use the `gIntersection` function from `rgeos`.
+The code `xyinter = gIntersection(x, y)` returns the intersecting area to us. Other functions like `gDifference`, or `gUnion`, also return geometry.
+
+```{r echo=F, warning=F, fig.width=6, fig.height=5}
+par(bg=NA)
+library(scales)
+x = readWKT("POLYGON((1 0,0 1,1 2,2 1,1 0))")
+y = readWKT("POLYGON((2 0,1 1,2 2,3 1,2 0))")
+
+xy.union = gUnion(x,y)
+bbox = gBuffer(gEnvelope(xy.union),width=0.5,joinStyle='mitre',mitreLimit=3)
+xy.inter = gIntersection(x,y)
+
+par(mar=c(0.5,0.5,0.5,0.5))
+plot(bbox, border='white')
+plot(x, add=T, col=alpha('red', 0.15))
+plot(y, add=T, col=alpha('blue', 0.15))
+plot(xy.inter, add=T, col='purple')
+
+```
+<div class="notes">
+Here you can see that purple bit is highlighting what's been returned from gIntersection.
+</div>
+
+## Vector data {.columns-2 .smaller}
+
+Grab soils within a certain range of the middle of study area
+```{r tidy=T, eval=F}
+cent = gCentroid(soils)
+bff = gBuffer(cent, width=250)
+int = gIntersection(soils, bff, byid=T)
+plot(int, col=rainbow(5))
+```
+
+<br><br><br><br><br><br><br><br><br><br><br>
+```{r echo=F, message=F, fig.width=4, fig.height=5}
+par(bg=NA)
+cent = gCentroid(soils)
+bff = gBuffer(cent, width=250)
+int = gIntersection(soils, bff, byid=TRUE)
+plot(int, col=rainbow(5))
+```
+
+## Vector data geometry relationships {.columns-2 .smaller}
+
+Different answer to "How do two shapes relate?"
 
 All contained in the `rgeos` package.
 Here we see `gIntersects` used on these two polygons.
@@ -530,29 +604,31 @@ Here we see `gIntersects` used on these two polygons.
 
 <br><br><br><br><br><br><br><br><br><br><br>
 ```{r echo=F, message=F, fig.width=4, fig.height=5}
+par(bg=NA)
 library(rgeos)
 p1 = readWKT("POLYGON((0 0,1 0,1 1,0 1,0 0))")
 p2 = readWKT("POLYGON((0.5 1,0 2,1 2,0.5 1))")
 p3 = readWKT("POLYGON((0.5 0.5,0 1.5,1 1.5,0.5 0.5))")
 
-par(mfrow=c(1,2))
-plot(p1,col='blue',border='blue',ylim=c(0,2.5));plot(p2,col='black',add=TRUE,pch=16)
-title(paste("Intersects:",gIntersects(p1,p2),
-            "\nDisjoint:",gDisjoint(p1,p2)))
+# par(mfrow=c(1,2))
+# plot(p1,col='blue',border='blue',ylim=c(0,2.5));plot(p2,col='black',add=TRUE,pch=16)
+# title(paste("Intersects:",gIntersects(p1,p2),
+#             "\nDisjoint:",gDisjoint(p1,p2)))
 
-plot(p1,col='blue',border='blue',ylim=c(0,2.5));plot(p3,col='black',add=TRUE,pch=16)
+plot(p1,col='blue',border='blue',ylim=c(0,2.5));plot(p3,col='black',add=F,pch=16)
 title(paste("Intersects:",gIntersects(p1,p3),
             "\nDisjoint:",gDisjoint(p1,p3)))
 ```
 <div class="notes">
+Sometimes we want to have a yes/no true/false answer to how two geometries relate.
+_Spatial Predicates_ is the term for this
 These all work in similar ways, by returning that true or false
 </div>
 
-## Vector Data Example {.smaller}
+## Vector data example {.smaller}
 ```{r}
 gIntersects(soils, wells)
 head(gIntersects(wells, soils, byid=T, returnDense=T))
-gIntersects(wells, soils, byid=T, returnDense=F)[1:2]
 ```
 
 <div class="notes">
@@ -561,7 +637,7 @@ see the difference by byid and not. With byid we get a matrix showing which poly
 Note that all these spatial predicates work in similar ways, but we are asking if they touch or if they are within etc
 </div>
 
-## Vector Data Example {.smaller}
+## Vector data example {.smaller}
 ```{r}
 
 gIntersects(wells, soils, byid=T, returnDense=F)[1:4]
@@ -570,7 +646,8 @@ gIntersects(wells, soils, byid=T, returnDense=F)[1:4]
 If we don't want everything, we can return a list, with the soils each point intersectss
 </div>
 
-## Vector Data Example {.columns-2 .smaller}
+## Vector data example {.columns-2 .smaller}
+
 ```{r tidy=T, eval=F}
 indxs <- gIntersects(
     
@@ -594,8 +671,9 @@ plot(
 )
 ```
 
-<br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br>
 ```{r echo=F, message=F, fig.width=4, fig.height=5}
+par(bg=NA)
 indxs = unique(unlist(gIntersects(wells, soils, byid=T, returnDense=F)))
 soils_with_wells = soils[indxs,]
 plot(
@@ -613,7 +691,7 @@ plot(
 We can see that we use our spatial predicates to select only those soil polygons that intersect with our point data, unlist it, and then grab distict indicies. We then use these to select the soil polygons we are interested in and plot only those.
 </div>
 
-## Vector Data Example {.smaller}
+## Vector data example {.smaller}
 Extract soils data to our point data...
 ```{r}
 soilsDat = over(wells, soils)
@@ -628,7 +706,7 @@ head(wells@data)
 Alternatively, we could use a helper function and extract this data to the well points. 
 </div>
 
-## Vector Data Example {.smaller}
+## Vector data example {.smaller}
 Perhaps we want to expand our our of concern
 ```{r tidy=T, eval=T}
 ## buffer of 50 meters (because of our projection)
@@ -644,67 +722,6 @@ head(over(wells_area, soils, fn=mean))
 <div class="notes">
 Buffering is a common geoprocessing routine that is run on vector files. It will expand the data out (or in) a given distance. Now our analysis is a little complicated by the fact that we may have more than one soil polygon intersecting with each circle, so we'll use an aggregation function with over
 </div>
-
-## Vector Data {.smaller}
-Another kind of relationship functions return the geometry (versus returning booleans)
-How do we get the overlapping area?
-```{r echo=F, warning=F, fig.width=6, fig.height=5}
-library(scales)
-x = readWKT("POLYGON((1 0,0 1,1 2,2 1,1 0))")
-y = readWKT("POLYGON((2 0,1 1,2 2,3 1,2 0))")
-
-xy.union = gUnion(x,y)
-bbox = gBuffer(gEnvelope(xy.union),width=0.5,joinStyle='mitre',mitreLimit=3)
-par(mar=c(0.5,0.5,0.5,0.5))
-plot(bbox, border='white')
-plot(x, add=T, col=alpha('red', 0.5))
-plot(y, add=T, col=alpha('blue', 0.5))
-```
-<div class="notes">
-Arguably this is more common
-</div>
-
-## Vector Data {.smaller}
-We use the `gIntersection` function, this returns that area to us
-`xyinter = gIntersection(x, y)`. Other functions like `gDifference`, `gUnion`, or `gSymdifference` also return geometry.
-
-```{r echo=F, warning=F, fig.width=6, fig.height=5}
-library(scales)
-x = readWKT("POLYGON((1 0,0 1,1 2,2 1,1 0))")
-y = readWKT("POLYGON((2 0,1 1,2 2,3 1,2 0))")
-
-xy.union = gUnion(x,y)
-bbox = gBuffer(gEnvelope(xy.union),width=0.5,joinStyle='mitre',mitreLimit=3)
-xy.inter = gIntersection(x,y)
-
-par(mar=c(0.5,0.5,0.5,0.5))
-plot(bbox, border='white')
-plot(x, add=T, col=alpha('red', 0.15))
-plot(y, add=T, col=alpha('blue', 0.15))
-plot(xy.inter, add=T, col='purple')
-
-```
-<div class="notes">
-Here you can see that purple bit is highlighting what's been returned from gIntersection.
-</div>
-
-## Vector Data {.columns-2 .smaller}
-Grab data within a certain range of the middle? 
-Note how this returns geometry
-```{r tidy=T, eval=F}
-cent = gCentroid(soils)
-bff = gBuffer(cent, width=250)
-int = gIntersection(soils, bff, byid=T)
-plot(int, col=rainbow(5))
-```
-
-<br><br><br><br><br><br><br><br><br><br><br>
-```{r echo=F, message=F, fig.width=4, fig.height=5}
-cent = gCentroid(soils)
-bff = gBuffer(cent, width=250)
-int = gIntersection(soils, bff, byid=TRUE)
-plot(int, col=rainbow(5))
-```
 
 # Raster Data
 

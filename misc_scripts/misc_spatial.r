@@ -1,4 +1,3 @@
-
 par(mfrow=c(2,3))
 ## Spatial Points
 sptl = data.frame(
