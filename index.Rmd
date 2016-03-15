@@ -283,9 +283,31 @@ mtext("building footprint or county", cex=mcex)
 ```
 
 ## Vector data intro
+
 Whether, points, lines or polygons, *comprised of coordinate pairs*
 
 ```{r echo=F}
+par(bg=NA)
+#, results="hide", warning=FALSE, message=FALSE, fig.width=8, fig.height=4
+ptsl2 = as.data.frame(l2)
+names(ptsl2) = c("x","y")
+coordinates(ptsl2) = ~ x + y
+crdTxt = apply(l2, 1, FUN=function(x) paste(x[1], x[2], sep=", "))
+plot(ptsl2, pch=19,cex=2)
+text(x=l2[1:3], y=l2[4:6], labels=crdTxt, pos=3, cex=2, offset=1)
+```
+
+<div class="notes">
+All of vector data is comprised of coordinate pairs.
+Points are the simplest, merely coordinate pairs.
+</div>
+
+
+## Vector data intro
+Whether, points, lines or polygons, *comprised of coordinate pairs*
+
+```{r echo=F}
+par(bg=NA)
 #, results="hide", warning=FALSE, message=FALSE, fig.width=8, fig.height=4
 sl2 = SpatialLines(list(S2))
 crdTxt = apply(l2, 1, FUN=function(x) paste(x[1], x[2], sep=", "))
@@ -295,9 +317,77 @@ text(x=l2[1:3], y=l2[4:6], labels=crdTxt, pos=3, cex=2, offset=1)
 ```
 
 <div class="notes">
-All of vector data is comprised of coordinate pairs.
-Points are the simplest, merely coordinate pairs.
 Lines are coordinate pairs but ordered, so it is understood that the line will connect the points in a certain order.
+Polygons, also ordered pairs, but returns to the starting point and fills the space in between.
+There are more complicated geometry but those will not be considered here
+</div>
+
+
+## Vector data intro
+Whether, points, lines or polygons, *comprised of coordinate pairs*
+
+```{r echo=F}
+par(bg=NA)
+
+ptsl2 = as.data.frame(l2)
+names(ptsl2) = c("x","y")
+coordinates(ptsl2) = ~ x + y
+
+plot(ptsl2, pch=19,cex=2)
+arrows(l2[1:2], l2[4:5], l2[2:3], l2[5:6], lwd=2)
+
+# crdTxt = apply(l2, 1, FUN=function(x) paste(x[1], x[2], sep=", "))
+text(x=l2[1:3], y=l2[4:6], labels=crdTxt, pos=3, cex=2, offset=1)
+```
+
+<div class="notes">
+Lines are coordinate pairs but ordered, so it is understood that the line will connect the points in a certain order.
+Polygons, also ordered pairs, but returns to the starting point and fills the space in between.
+There are more complicated geometry but those will not be considered here
+</div>
+
+## Vector data intro
+Whether, points, lines or polygons, *comprised of coordinate pairs*
+
+```{r echo=F}
+##Polygons
+par(bg=NA)
+
+ptsl2 = as.data.frame(l2)
+names(ptsl2) = c("x","y")
+coordinates(ptsl2) = ~ x + y
+
+plot(ptsl2, pch=19,cex=2)
+segments(l2[1:3], l2[4:6], l2[c(2,3,1)], l2[c(5,6, 4)], lwd=2)
+
+# crdTxt = apply(l2, 1, FUN=function(x) paste(x[1], x[2], sep=", "))
+text(x=l2[1:3], y=l2[4:6], labels=crdTxt, pos=3, cex=2, offset=1)
+```
+
+<div class="notes">
+Polygons, also ordered pairs, but returns to the starting point and fills the space in between.
+There are more complicated geometry but those will not be considered here
+</div>
+
+## Vector data intro
+Whether, points, lines or polygons, *comprised of coordinate pairs*
+
+```{r echo=F}
+##Polygons
+par(bg=NA)
+
+ptsl2 = as.data.frame(l2)
+names(ptsl2) = c("x","y")
+coordinates(ptsl2) = ~ x + y
+
+plot(ptsl2, pch=19,cex=2)
+arrows(l2[1:3], l2[4:6], l2[c(2,3,1)], l2[c(5,6, 4)], lwd=2)
+
+# crdTxt = apply(l2, 1, FUN=function(x) paste(x[1], x[2], sep=", "))
+text(x=l2[1:3], y=l2[4:6], labels=crdTxt, pos=3, cex=2, offset=1)
+```
+
+<div class="notes">
 Polygons, also ordered pairs, but returns to the starting point and fills the space in between.
 There are more complicated geometry but those will not be considered here
 </div>
