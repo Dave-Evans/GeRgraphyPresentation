@@ -869,6 +869,7 @@ writeRaster(elev, "data/dem_wi_out.tif")
 ```
 
 ```{r echo=FALSE}
+options(stringsAsFactors=TRUE)
 elev = raster("data/dem_wi.tif")
 ```
 
@@ -1003,7 +1004,7 @@ extent(elev)
 ## Raster overlay | coordinate systems
 
 ```{r}
-cty_grid = rasterize(counties, elev, field="COUNTY_FIP")
+cty_grid = rasterize(counties, elev, field=COUNTY_FIP)
 summary(cty_grid)
 ```
 
@@ -1054,7 +1055,7 @@ plot(cty_prj, add=TRUE)
 ## Raster overlay | coordinate systems
 
 ```{r}
-cty_grid = rasterize(counties, elev, field="COUNTY_FIP")
+cty_grid = rasterize(cty_prj, elev, field="COUNTY_FIP")
 summary(cty_grid)
 ```
 
