@@ -622,8 +622,9 @@ Note that we are using what is known as the proj4 standard of specifying the crs
 
 ## Vector data {.smaller}
 
-Another kind of relationship functions return the geometry
-How do we get the overlapping area? 
+Often we're interested in two layers and want to know how they relate.
+
+"How do we get the overlapping area?"
 
 ```{r echo=F, warning=F, fig.width=6, fig.height=5}
 par(bg=NA)
