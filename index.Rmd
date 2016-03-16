@@ -94,7 +94,7 @@ This is a whole field of mathematically intensive study termed "geodesy"
 
 ## What is <font color="red">spatial data?</font> {.smaller}
 
-Much of the field of geodesy is jam-packed in the `rgdal` and `sp` packages, which use the PROJ.4 library for projections and transformations.
+All the coordinate reference system information you need is in the `rgdal` and `sp` packages, which use the PROJ.4 library for projections and transformations.
 
 ```{r results="hide", warning=FALSE, message=FALSE}
 ## will automatically load sp for us too
@@ -109,7 +109,7 @@ Coordinate reference systems are ways of referencing X and Y (longitude and lati
 
 ## What is <font color="red">spatial data?</font> {.smaller}
 
-PROJ.4 (in`rgdal`) includes a comprehensive list of projections that are typically represented as a **string of parameters**. The simplest is a latitude/longitude system denoted as
+PROJ.4 (in `rgdal`) includes a comprehensive list of projections that are typically represented as a **string of parameters**. The simplest is a latitude/longitude system denoted as
 
 ```"+proj=longlat"```
 
@@ -394,7 +394,7 @@ There are more complicated geometry but those will not be considered here
 
 ## Vector data intro {.smaller}
 
-Think like a table, each row (observation) is referred to as a _feature_.
+Some vocab: each row (observation) is referred to as a _feature_.
 
 ![think like a table](img/table_concept.png)
 
@@ -443,9 +443,8 @@ Create a point layer from a flat file of coordinates
 </div>
 
 ## Vector data basics {.smaller}
-Helper functions:
+
 ```{r}
-class(soils)
 slotNames(soils)
 length(soils)
 ```
@@ -473,11 +472,14 @@ Take a look at the structure of the shape itself
 </div>
 
 ## Vector data basics {.smaller}
-A number of common functions have methods for spatial data
-```{r}
+
+```{r messages=F}
+
 silty = subset(soils, Silt1 > 70)
 paste("There are", length(soils), "soil features total;")
 paste(length(silty), "with a silt percentage over 70")
+library(rgeos)
+paste("Covering: ", round(gArea(silty)*0.000001,2), "Km2")
 ```
 <div class="notes"> 
 Grabbing soils above a certain level of silt
